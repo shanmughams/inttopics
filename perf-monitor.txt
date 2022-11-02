@@ -1,0 +1,18 @@
+Top 10 reasons why your Enterprise Java Application is slow
+=====================
+
+1. There is a sudden spike in the ‘Load’ that you did not notice
+	- monitor the ‘throughput’ of the application (specifically, number of requests/minute). 
+2. There is a poorly responding backend system i.e webservices or remote Msg Queues
+	- Monitor the response time of the external systems experienced by your application
+3. Your database calls are taking for ever
+	- Running OUT System resources such as CPU, Memory
+	- A Block in the Database
+4. You are running out Database connections i.e When you max out the DB Connection Pool
+	- It could be that you are NOT closing the DB connections properly.
+5. You are running out of Threads
+	- When you exhaust all the available threads in the Thread pool, subsequent requests go into ‘wait’ state, waiting for an available thread – painful wait time. The reason why you are running of out thread should be investigated. It could be because of a poorly performing backend or a slow DB response time.
+6. The Server hosting your application is running slow or running out of resources
+	- Tools like Nagios can help monitor the infrastructure effectively.
+7. Super excessive logging in your Application
+

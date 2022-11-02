@@ -1,0 +1,219 @@
+http://www.programmerinterview.com/index.php/database-sql/find-nth-highest-salary-sql/
+
+1 - Find the nth highest salary using the TOP keyword in SQL Server
+==============================================================
+
+We can also use the TOP keyword (for databases that support the TOP keyword, like SQL Server) to find the nth highest salary. Here is some fairly simply SQL that would help us do that:
+
+SELECT TOP 1 Salary
+FROM (
+      SELECT DISTINCT TOP N Salary FROM Employee  ORDER BY Salary DESC
+      ) AS Emp
+ORDER BY Salary
+
+
+
+SELECT * FROM Employee Emp1
+WHERE (1) = (
+SELECT COUNT(DISTINCT(Emp2.Salary)) FROM Employee Emp2 WHERE Emp2.Salary > Emp1.Salary)
+
+or
+
+Co-Related Vs Nested-SubQueries.
+===============================
+A Corelated Sub-query should refer its parent(Outer Query).
+Technical difference between Normal Sub-query and Co-related sub-query are:
+
+1. Looping: Co-related sub-query loop under main-query; whereas nested not; therefore co-related sub-query executes on each iteration of main query. Whereas in case of Nested-query; subquery executes first then outer query executes next. Hence, the maximum no. of executes are NXM for correlated subquery and N+M for subquery.
+
+2. Dependency(Inner to Outer vs Outer to Inner): In the case of co-related subquery, inner query depends on outer query for processing whereas in normal sub-query, Outer query depends on inner query.
+
+3.Performance: Using Co-related sub-query performance decreases, since, it performs NxM iterations instead of N+M iterations. ¨ Co-related Sub-query Execution.
+For example See find the Nth max salary by Co-related Sub-query:
+
+SELECT Salary 
+FROM Employee E1
+WHERE N-1 = (SELECT COUNT(*)
+             FROM Employee E2
+             WHERE E1.salary <E2.Salary) 
+
+2 - Self join manager employee answer
+================================
+http://www.programmerinterview.com/index.php/database-sql/what-is-a-self-join/
+
+SELECT e1.Name, e2.Name FROM Employee e1 INNER JOIN Employee e2 ON e1.ManagerID = e2.EmployeeID
+or
+SELECT * FROM Employee e1 INNER JOIN Employee e2 ON e1.ManagerID = e2.EmployeeID
+
+
+3 - Inner Join
+==============
+select * from employee, location where employee.empID = location.empID
+or
+select * from employee inner join location on employee.empID = location.empID
+
+
+4 - Right Join
+==============
+http://www.programmerinterview.com/index.php/database-sql/inner-vs-outer-joins/
+select * from employee right join location on employee.empID = location.empID;
+
+5 - Left  Join
+==============
+select * from employee left join location on employee.empID = location.empID;
+
+6 - Full  Join (or) full outer join
+===================================
+http://www.programmerinterview.com/index.php/database-sql/difference-between-a-full-join-and-an-inner-join/
+
+select * from employee full join location  on employee.empID = location.empID;
+
+A full join will return all rows that match based on the “employee.empID = location.empID” join predicate, and it will even return all the rows that do not match – which is why it is called a full join. 
+
+7 - Inner Join
+==============
+only the rows that actually match based on the join predicate 
+
+select * from employee inner join location on  employee.empID = location.empID
+or
+select * from employee, location where employee.empID = location.empID
+
+
+ACID
+=====
+Atomicity: This property ensures that either all the operations of a transaction reflect in database or none. Let’s take an example of banking system to understand this: Suppose Account A has a balance of 400$ & B has 700$. Account A is transferring 100$ to Account B. This is a transaction that has two operations a) Debiting 100$ from A’s balance b) Creating 100$ to B’s balance. Let’s say first operation passed successfully while second failed, in this case A’s balance would be 300$ while B would be having 700$ instead of 800$. This is unacceptable in a banking system. Either the transaction should fail without executing any of the operation or it should process both the operations. The Atomicity property ensures that.
+
+Consistency: To preserve the consistency of database, the execution of transaction should take place in isolation (that means no other transaction should run concurrently when there is a transaction already running). For example account A is having a balance of 400$ and it is transferring 100$ to account B & C both. So we have two transactions here. Let’s say these transactions run concurrently and both the transactions read 400$ balance, in that case the final balance of A would be 300$ instead of 200$. This is wrong. If the transaction were to run in isolation then the second transaction would have read the correct balance 300$ (before debiting 100$) once the first transaction went successful.
+
+Isolation: For every pair of transactions, one transaction should start execution only when the other finished execution. I have already discussed the example of Isolation in the Consistency property above.
+
+Durability: Once a transaction completes successfully, the changes it has made into the database should be permanent even if there is a system failure. The recovery-management component of database systems ensures the durability of transaction.
+
+
+Tips
+====
+1 - Don’t use too many indexes - extra memory
+2 - Try not to include columns that are repeatedly updated in an index 
+	-  number of ‘writes’ is increased two-fold 
+3 - Creating indexes on foreign key column(s) can improve performance
+4 - Create indexes for columns that are repeatedly used in predicates of your SQL queries
+5 - Consider deleting an index when loading huge amounts of data into a table
+	- index will not have to be updated during the delete, which could save you a lot of time!
+
+
+1.  Avoid Cartesian products
+2.  Avoid full table scans on large tables
+3.  Use SQL standards and conventions to reduce parsing
+4.  Lack of indexes on columns contained in the WHERE clause
+5.  Avoid joining too many tables
+6.  Monitor V$SESSION_LONGOPS to detect long running operations
+7.  Use hints as appropriate
+8.  Use the SHARED_CURSOR parameter
+9.  Use the Rule-based optimizer if I is better than the Cost-based optimizer
+10. Avoid unnecessary sorting
+11. Monitor index browning (due to deletions; rebuild as necessary)
+12. Use compound indexes with care (Do not repeat columns)
+13. Monitor query statistics
+14. Use different tablespaces for tables and indexes (as a general rule; this is old-school somewhat, but the main point is reduce I/O contention)
+15. Use table partitioning (and local indexes) when appropriate (partitioning is an extra cost feature)
+16. Use literals in the WHERE clause (use bind variables)
+17. Keep statistics up to date
+
+
+query execution plan
+===================
+ how the index will be used, how joins will be performed (and their associated logic), and also an estimate of the resource cost. 
+
+Index-organized table
+====================
+An index-organized table (IOT) is a type of table that stores data in a B*Tree index structure.
+
+Normal relational tables, called heap-organized tables, store rows in any order (unsorted). In contrast to this, index-organized tables store rows in a B-tree index structure that is logically sorted in primary key order. Unlike normal primary key indexes, which store only the columns included in its definition, IOT indexes store all the columns of the table (see below for an exception to this rule - called the overflow area).
+
+Clustered indexes vs Non-Clustered indexes
+============================================
+There can be only one clustered index per table. However, you can create multiple non-clustered indexes on a single table.
+Clustered indexes only sort tables. Therefore, they do not consume extra storage. Non-clustered indexes are stored in a separate place from the actual table claiming more storage space.
+Clustered indexes are faster than non-clustered indexes since they don’t involve any extra lookup step
+
+Long running queries
+==================
+The Oracle data dictionary contains a little-known view called the v$session_longops. The v$session_longops view allows the Oracle professional contract the amount of time that is used by long-running DLL and DML statement
+select * from
+(
+  select      opname,     start_time,     target,     sofar, totalwork,units, elapsed_seconds, message
+   from  v$session_longops   order by start_time desc
+)
+where rownum <=1;
+
+How to Update millions or records in a table
+=============================================
+If I had to update millions of records I would probably opt to NOT update. I would more likely do: 
+
+CREATE TABLE new_table as select <do the update "here"> from old_table; 
+
+index new_table 
+grant on new table 
+add constraints on new_table 
+etc on new_table 
+
+drop table old_table 
+rename new_table to old_table; 
+
+SQL constraints 
+================
+https://sqlandplsql.com/2013/02/28/oracle-constraints-examples/
+
+	1 - NOT NULL - Ensures that a column cannot have a NULL value
+						Create table person ( pno   integer, pname varchar2(20) not null);
+
+						pname column has a not null constraint.
+
+						SQL> desc person;
+						Name                                      Null?    Type
+						—————————————– ——– ————
+						PNO                                                NUMBER(38)
+						PNAME                                     NOT NULL VARCHAR2(20)
+
+						Below insert statement will validate the above not null constraint
+
+						SQL> insert into person values(1,null);
+						insert into person values(1,null)
+						*
+						ERROR at line 1:
+						ORA-01400: cannot insert NULL into (“PERSON”.”PNAME”)
+	2 - UNIQUE - Ensures that all values in a column are different
+			Create table person (pno   integer,pname varchar2(20) constraint uq_pname unique);
+			SQL> insert into person values(1,’Bill’);
+
+				1 row created.
+
+				SQL> insert into person values(2,’Bill’);
+				insert into person values(2,’Bill’)
+				*
+				ERROR at line 1:
+				ORA-00001: unique constraint (UQ_PNAME) violated
+
+				Next, UNIQUE constraint column can accept null values.
+
+				SQL> insert into person values(2,null);
+
+				1 row created.
+
+				SQL> insert into person values(3,null);
+
+				1 row created
+	
+	3 - PRIMARY KEY - A combination of a NOT NULL and UNIQUE. Uniquely identifies each row in a table
+	4 - FOREIGN KEY - Uniquely identifies a row/record in another table
+	5 - CHECK - Ensures that all values in a column satisfies a specific condition
+				Create table person ( 	pno    integer, pname  varchar2(20),
+					status varchar2(20) constraint ch_status check( status in (‘ACTIVE’,’INACTIVE’)) );
+	
+	
+	6 - DEFAULT - Sets a default value for a column when no value is specified
+		REATE TABLE Persons (    ID int NOT NULL,     LastName varchar(255) NOT NULL,  City varchar(255) DEFAULT 'Sandnes'); 
+	7 - INDEX - Used to create and retrieve data from the database very quickly
+
+
+

@@ -1,0 +1,284 @@
+Data Types
+==========
+1 - Scalar data type
+	- Number, PLS_INTEGER, BINARY_FLOAT, BINARY_DOUBLE
+	- CHAR, VARCHAR2, NCHAR, NCARCHAR2
+	- RAW
+	- Boolean
+	- BLOB, CLOB, NCLOB
+	- DATE, TIMESTAMP
+	
+
+2 - Composite type
+	- Record (One row of data)
+		- TYPE
+		- %ROWTYPE
+	- Collection (Array of rows)
+		- VARRAY
+		- NESTED TABLE
+		- Associative array
+		
+3 - Reference data type	
+	- Cursor
+
+Index 
+1. What is Index? How to create index?
+	- a DB schema for fast access.
+		
+		
+2. What are the types of index? - 
+	B Tree (default, 
+		create index indx1 opn employee(empno); -- 
+	Bit map(which has less no cardinality i.e gender, deptname, )
+		create bitmap index idx_bitmap_deptno on employee(deptno)
+	Function based (index used on column where function is used
+		create index indx_fn_ename on employee(upper(ename));
+
+	Reverse key - > index vales are reversed, similar to Btree. Avoid index block contention
+		create index indx1 opn employee(sal) reverse; -- 
+	Composite key index - index on more columns. The columns used in where columns for a query
+3. How to find the list of indexes for a given table?
+	- check the data dictionary i.e.  USER_INDEXES 
+		select * from USER_INDEXES where table_name = 'employee'; --list out all indexes
+		
+		- get the columns used by USER_IND_COLUMNS
+		select * from USER_IND_COLUMNS where table_name='employee'
+		
+		- get the statistics such as distinct values in indexes, by USER_IND_EXPRESSIONS 
+		select * from USER_IND_EXPRESSIONS where table_name='employee'
+		
+		
+4. Explain B-tree index
+https://www.youtube.com/watch?v=fRbtzOFLFME&list=PLb1qVSx1k1Vr0v4wVyvT3GEuA0J0M4xBm&index=21
+	- Balanced tree idx, with an ordered list of values divided into ranges. Default index. 
+	Types of scan in BTree -> 
+		a - Range Scan - For non unique index, search the range of values even single value is given 
+			e.g select * from emp where empid=10;
+		b - Unique Scan - Need unique index ,
+		c - Index Full Scan 
+			e.g create index idx_sal on emp(sal)
+			select sum(sal) from employee.
+			- here if, sum is part of the index, then full scan of sal index is enough than scann for full table scan
+		d - Index Full Scan(Min/Max), similar to index full scan, but it takes the firts or last emp detail
+		e - Fast FUll Scan
+		
+	- Can we create index on all column - YES, we can. it means duplicating the table. Or by creating index ordered table - storing the data as per the index column
+
+5. Explain Bitmap index
+https://www.youtube.com/watch?v=812ALQWvIOc&list=PLb1qVSx1k1Vr0v4wVyvT3GEuA0J0M4xBm&index=22
+	- another type of index, stores the data in type of array, mainly for cols having less cardinality (i.e distinct values)
+	- create bitmap index idx_stud student(result)
+	- less cardinality, less DML and more Read only
+6. Explain "Function based" index
+	- efficient on evaluating on statements which contain function in Where clause
+7. Explain "Reverse Key" index
+	- trying to solve index block contention
+	- disadv - cant do range scan as in select * from student where mark < 25
+	
+https://www.youtube.com/watch?v=jiMwF_V4Ie0&list=PLb1qVSx1k1Vr0v4wVyvT3GEuA0J0M4xBm&index=25	
+8. When to choose what type of index?
+	- B tree index suitable for high number of unique cols e.g account no, emp id, mail-id, phone no
+	- Bitmap index - suitable for low cardinality, with very less DML
+	- Function based index - used when fns are usedin where condition
+	- Reverse key index - to avoind index block contention
+	
+9. How to know index is being used?
+	- check explain plan - where orcale is planing to execute
+	- To check the atuals executed : check 2 queries
+		a)Get sqlid from the query select * from v$sql where sql_text like '%from emp where empno=5%';
+		b)For that sqlid select sql_id, OPERATIONS, OPTIONS, OBJECT_NAME, OBJECT_TYPE, COST, CARDINALITY from V$SQL_PLAN where sql_id={sql_id selected before}
+	
+10. How to monitor index usage?
+	Step 1 : Enable monitoring
+	ALTER INDEX idx_empno MONITORING USAGE;
+	
+	select * from emp where empno > 5;
+	ALTER INDEX idx_empno MONITORING USAGE;
+	
+	Step 2 : get wheteher used or not 
+		select * from dba_object_usage;
+	
+11. What are the advantages/drawbacks of index?
+	Adv : Performance improvement
+	Disadv : comsumes space
+			index need to be managed
+			DML perf may be impacted
+			
+https://www.youtube.com/watch?v=PEfHuyc79zM&list=PLb1qVSx1k1Vr0v4wVyvT3GEuA0J0M4xBm&index=26
+12 - Types of DML triggers | Order of trigger Execution if more than one
+	- Execution order - Before statement, before row,{table operations} , after row & After statement
+	
+13 - SQL Loader - utility to load data files into db
+	- input files => Data file, control file, 
+	- output ==> log file, bad file, discard file
+
+	CTrl file eg : OPTIONS (SKIP=1) 
+	LOAD DATA
+	INFILE 'sample_data.txt'
+	DISCARDFILE 'discard.log'
+	TRUNCATE INTO TABLE employee where dept_no=10
+	FIELDS TERMINATED BY ','
+	(emp_nam,emp_job, emp_sal, dept_no)
+	
+
+Partitioning
+==============
+Allows tables, indexes & Index-Organized tables to be subdivided into smaller pieces, so that the db objects can be managed & access at finer level of granularity
+	- Any table have data > 2 GB, prefer partition
+	- deleting billion of records will take forever. So table is partitioned. delete is instant.
+
+explain plan
+===========
+Query 1 : Explain plan for ….Query --> Explain plan for Select * from Hr.employees a, hr.departments b where a.employee_id = b.manager_id;
+Query 2 :select * from table(dbms_xplan.disaplay);	
+Query 3 :select * from plan_table where plan_id=31;
+Explain plan for Select * from Hr.employees a, hr.departments b where a.employee_id = b.manager_id;
+
+
+
+
+==================
+1.CURSOR: When PLSQL issues sql statements it creates private work area to parse & execute the sql statement is called cursor.
+
+2.IMPLICIT: When any PL/SQLexecutable block issues sql statement. 
+PL/SQL creates implicit cursor and manages automatically means implcit open & close takes place. 
+It used when sql statement return only one row.
+It has 4 attributes SQL%ROWCOUNT, SQL%FOUND, SQL%NOTFOUND, SQL%ISOPEN.
+
+BEGIN
+	update emp sert sal = sal+10;
+	dbms_output.put_line('No of rows updated = ' SQL%ROWCOUNT);
+END;
+
+3.EXPLICIT: It is created & managed by the programmer. It needs every time explicit open,fetch & close. 
+It is used when sql statement returns more than one row. 
+It has also 4 attributes CUR_NAME%ROWCOUNT, CUR_NAME%FOUND, CUR_NAME%NOTFOUND, CUR_NAME%ISOPEN. 
+It process several rows by using loop. The programmer can pass the parameter too to explicit cursor.
+
+Example: Explicit Cursor
+ 
+
+declare 
+   cursor emp_cursor 
+   is 
+   select id,name,salary,dept_id 
+   from employees; 
+   v_id employees.id%type; 
+   v_name employees.name%type; 
+   v_salary employees.salary%type; 
+   v_dept_id employees.dept_id%type; 
+   begin 
+   open emp_cursor; 
+   loop 
+   fetch emp_cursor into v_id,v_name,v_salary,v_dept_id; 
+   exit when emp_cursor%notfound;
+   dbms_output.put_line(v_id||', '||v_name||', '||v_salary||','||v_dept_id); 
+   end loop;                    
+   close emp_cursor; 
+   end;
+==================
+
+==================
+
+==================
+Why is the use of bind variables such an issue?
+
+Oracle uses a signature generation algorithm to assign a hash value to each SQL statement based on the characters in the SQL statement. Any change in a statement (generally speaking) will result in a new hash and thus Oracle assumes it is a new statement. Each new statement must be verified, parsed and have an execution plan generated and stored, all high overhead procedures.
+==================
+
+BLOB is for binary data (videos, images, documents, other)
+CLOB is for large text data (text)
+Oracle 128TB
+================
+
+VARRAY
+DECLARE 
+   type namesarray IS VARRAY(5) OF VARCHAR2(10); 
+   type grades IS VARRAY(5) OF INTEGER; 
+
+BEGIN 
+   names := namesarray('Kavita', 'Pritam', 'Ayan', 'Rishav', 'Aziz'); 
+   marks:= grades(98, 97, 78, 87, 92); 
+
+DECLARE 
+   CURSOR c_customers is 
+   SELECT  name FROM customers; 
+   type c_list is varray (6) of customers.name%type; 
+   name_list c_list := c_list(); 
+   counter integer :=0; 
+BEGIN 
+   FOR n IN c_customers LOOP 
+      counter := counter + 1; 
+      name_list(counter)  := n.name; 
+      dbms_output.put_line('Customer('||counter ||'):'||name_list(counter)); 
+   END LOOP; 
+END; 
+/ 
+==============
+CREATE [OR REPLACE] PROCEDURE procedure_name 
+[(parameter_name [IN | OUT | IN OUT] type [, ...])] 
+{IS | AS} 
+DECLARE 
+   a number;    b number;    c number;
+PROCEDURE findMin(x IN number, y IN number, z OUT number) IS 
+BEGIN 
+   IF x < y THEN      z:= x; 
+   ELSE   z:= y;    END IF; 
+END;   
+BEGIN 
+   a:= 23;    b:= 45; 
+   findMin(a, b, c); 
+   dbms_output.put_line(' Minimum of (23, 45) : ' || c); 
+END; 
+/
+==========
+Methods for Passing Parameters - Actual parameters can be passed in three ways − 
+    Positional notation	findMin(a, b, c, d);, Named notation findMin(x => a, y => b, z => c, m => d);, Mixed notation	findMin(a, b, c, m => d);
+==========
+Cursor
+------
+Implicit cursor => on DML statement (INSERT, UPDATE and DELETE) 
+	=> SQL cursor,  has attribute
+	
+	
+	s such as %FOUND, %ISOPEN, %NOTFOUND, and %ROWCOUNT
+
+Explicit:
+DECLARE 
+   c_id customers.id%type; 
+   c_name customerS.Name%type; 
+   c_addr customers.address%type; 
+   CURSOR c_customers is 
+      SELECT id, name, address FROM customers; 
+BEGIN 
+   OPEN c_customers; 
+   LOOP 
+   FETCH c_customers into c_id, c_name, c_addr; 
+      EXIT WHEN c_customers%notfound; 
+      dbms_output.put_line(c_id || ' ' || c_name || ' ' || c_addr); 
+   END LOOP; 
+   CLOSE c_customers; 
+END; 
+/
+
+============
+RECORD 
+	1 - Table-Based Records => DECLARE  customer_rec customers%rowtype;  BEGIN   SELECT * into customer_rec  FROM customers  WHERE id = 5;
+	2 - Cursor-Based Records => 
+			DECLARE 
+			   CURSOR customer_cur is 
+			      SELECT id, name, address  
+			      FROM customers; 
+			   customer_rec customer_cur%rowtype; 
+			BEGIN 
+			   OPEN customer_cur; 
+			   LOOP 
+			      FETCH customer_cur into customer_rec; 
+			      EXIT WHEN customer_cur%notfound; 
+			      DBMS_OUTPUT.put_line(customer_rec.id || ' ' || customer_rec.name); 
+			   END LOOP; 
+			END;   
+	3 - User-Defined Records 
+		DECLARE TYPE books IS RECORD 
+			(title  varchar(50), author  varchar(50), subject varchar(100),  book_id   number); 
+		book1 books; book2 books; 

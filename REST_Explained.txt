@@ -1,0 +1,285 @@
+In Yr 2000 = xml based request / response contract
+
+	parsing of xml cpu & memory intensive
+		- mobile suffer bad battery becos of above
+
+2002 - JSON
+
+When API becomes RESTful
+
+	1. REst Architecture style
+	2. Set of principles
+
+Rest API Consumers
+	1 - internal (private)
+	2 - external (public)
+	3 - partner (trusted)
+	
+API Considerations
+==================
+1 - Security
+		- Private - internal - 
+			- Basic auth seems ok
+		- Public - External
+			- CAnt trust
+			- Key secret
+			- Oauth
+			
+2 - Access request
+	- private	
+		- adhoc process
+	- public	
+		- Create developer portal for access request 
+3 - Documentation
+	- Private
+	- Partner
+		- Doc in internal website
+		- in emails, pdf
+	- public 
+		- API doc be publised in website
+4 - SLA Management
+	- Uptime	- 99.99%
+	- Throughput - 20 req/sec
+	- support - email, call
+	
+	
+	
+
+
+
+REST architectural constraints
+==================================
+	1 - Client server
+		Server side:
+		==========
+			1 - Performance
+			2 - Scaling
+			3 - Caching
+			4 - Data security
+			5 - Authentication & Authorization
+			6 - DB or File System or Any repository
+
+		CLient side
+		=========
+			1 - user experience
+			2 - UI
+			3 - multi device support
+
+	2 - Uniform interface
+		- UR/URL
+			HTTP Get in URL 
+		- Representation of resource
+			- Data received as XML,JSON,Txt, pdf,.....
+		- Self descriptive message - metadata
+			- Content-type
+			- HTTP status code
+		- Host
+			Clinet
+				- Accept e.g application/json or "application/xml"
+		- Hypermedia 
+			- Response = Data + Actions (HATEOS)
+			
+	3 - Statelessness
+		- No State mgmgt in server
+		- All calls from clinet are independent
+		- Client needs to send all info to client
+
+	4 - Caching
+		- Caching happen in server, client, mid-tier, intermediaries, app-server, gateways..
+		- Server need to explicitly say "Cacheable" or "non-cacheable"
+		- caching controlled by HTTP headers
+			- Cache-control => private; max-age=60 Ii.e secs)
+				- only browser can cache
+			- Expires
+			- Last-Modified
+	
+	5 - Layered system
+		- Client -> gateways -> Load Balance -> Multiple app server -> backend db
+	6 - Code on demand (optional)
+
+	
+RMM - Richardson Maturity model
+===============================
+L 0 = Swamp of POX - Plain old xml =>XML over HTTP
+L 1 = Resources	=> Domain objects
+L 2 = Http Verbs
+	Insert => POST
+	Select => Get
+	Update => PUT
+	Delete => Delete
+L 3 = Hypermedia
+
+
+API Base url:
+============
+- Keep url simple
+- No wwww
+- if possible use Sub DOmian https://api.twitter.com
+- If possible use separate domain ex https://api.walmartlabs.com
+
+Resources (Nouns) and Resources be in Plurals
+=============================================
+/items = /items/{id}
+
+ex for acme travel site
+
+api.acme.com/vacations
+api.acme.com/vacations/{id}
+
+Actions
+=======
+- Not CRUD operations
+	- Ex calculate tax, generate report, 
+		- uber's  /estimates/price
+		- twitter's /friendships/lookup
+		- walmart's /search?query
+		
+	to book a vacation package
+	-------------------------
+		- POST /vacations/{id}/book
+		- POST /bookVacation
+		
+	Search by destination and nights
+	---------------------------------
+		- GET /Vacations/Search?destination=bahama&nights=4
+		
+Associations
+============
+	- resource containing another resource
+	- avoid deep nesting (max level 3)
+	
+
+REST API - CRUD
+===============
+Error response template
+	- status code : 4xx 5xx
+	- content-type : application/json
+	
+	-App error code ex 7002
+		- required field 'abc' is missing
+	- end point info	
+		- url of rest api
+	
+Caching:
+=========
+	Based on (for dynamic data):
+	1 - Speed of change	- eg Stock market (/sec),
+	2 - Time Sensitivity -  news market (changes /sec)
+	3 - Security	- Customer data - No cache
+	
+	What to cache:
+		- Static data - html,css,jpeg,pdf,css,js,flash
+	
+	- API will control caching
+	- Who can cache?
+		- Application in client
+		- Intermediaries
+			- routers, Internet cloud, gateways
+	- Life time of cache
+
+	- RFC 2616 (Cache control directives)
+	
+	Cache-control: "directive-1, directive-2"
+		ex - Cache-control: "private, max-age=60"
+				- No cache in intermediaries
+				- Cache ONLY in browser
+			- Cache-control: "no-store, max-age=60"
+				- Sensitive data
+			- Cache-control: "no-cache"
+				- Always get data from server
+				
+			- Cache-control: "Etag"
+				1 -> Server Response to have etag i.e some hash value
+				2 -> subsequent request from client comes with that etag
+			- cache-control : "max-age=60"  //60 secs
+				
+				- to check the data got changed
+				- value in response
+				
+			
+		- Client
+		- Server
+		
+		Response:
+			who can cache
+			how long
+			under what conditions
+			
+		Request
+			Override cache behaviour
+			protect sensitive data
+
+Partial Response
+================
+		- Selected list of fields 
+			- vary between mobile & desktop apps
+
+Pagination
+==========
+		- Cursor based
+			- Facebook
+		- Offset based
+			- Linkedin
+				- ex GET /../Hotels?offset=6&limit=5  => rows 6 to rows 10 returned
+		- Http Header
+			- Github
+				- RFC5988
+
+API Security
+============
+	- Sound firewall
+	
+	Attacks:
+		1 - Data theft
+		2 - Data Manipulation
+		3 - Identity theft
+		4 - DOS attack
+		
+		5 - Who is the caller of the API
+		
+		6 - Transaction Authorization
+		
+		
+		7 - Authentication
+			- Basic Authentication
+			- Token Authentication
+			- Key Based Authentication
+			
+			- OAuth 2.0 Authentication
+			
+		Security
+			- Use TLS/HTTPS
+			- Dont use Self signed
+			
+Design decisions
+================
+	1 - Send API key & secret , signature
+			- Http header, query params,  req body
+	2 - API Key & secret mgmgt
+		- storage (db, in-memory)..
+		- Key lifetime validity
+		- interface to invalidate the keys or secrets
+	3 - Security scheme
+		- API key to implement the security
+	4 - API key / secret provisioning
+		- How to provide the key/securiy
+			- from web page, email ...
+	5 - Rate limiting 
+			- no of calls/sec
+	6 - Analytitcs
+
+	
+	Handle the items 2 to 6 is API Management platform
+	
+Authentication
+==============
+	- JWT auth
+	
+Authorization
+=============
+	- OAuth 2.0
+		- Diff types of "TOKENS"
+		- 5 Methods ("GRANTS") for accessing TOKENS
+		- End user controls what data to share ("SCOPE")
+		- Application/Client needs "API Key"/"Secret"
+		

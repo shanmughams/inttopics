@@ -1,0 +1,8 @@
+
+Multithreading Costs
+	1 - Context Switching Overhead
+			When a CPU switches from executing one thread to executing another, the CPU needs to save the local data, program pointer etc. of the current thread, and load the local data, program pointer etc. of the next thread to execute.
+			Context switching isn't cheap. You don't want to switch between threads more than necessary.
+	2 - Increased Resource Consumption
+			Besides CPU time a thread needs some memory to keep its local stack. It may also take up some resources inside the operating system needed to manage the thread. Try creating a program that creates 100 threads that does nothing but wait, and see how much memory the application takes when running.
+			

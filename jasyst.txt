@@ -1,0 +1,25 @@
+1 - To ecnrypt the password in application.properties
+spring.datasource.password=DEC(Alpha@123) - run below command
+
+mvn jasypt:encrypt -Djasypt.encryptor.password="Shan7856"
+
+The above will change passsword as below
+spring.datasource.password=ENC(0Dskpx2Xk9whnYrbXWYfM7lX/6WQOvy2m2pHJ+JJnkVHslXB6ee8L5U1yQP/3YTS) 
+
+2 - To compile application
+
+mvn clean install -Djasypt.encryptor.password=Shan7856  
+
+3 - to run application
+java -Djasypt.encryptor.password=Shan7856 -jar target\jasypt-demo-0.0.1-SNAPSHOT.jar 
+
+
+https://javatechie4u.medium.com/spring-boot-password-encryption-using-jasypt-9ee731701e70
+
+
+mvn jasypt:encrypt-value -Djasypt.encryptor.password=Shan7856 -Djasypt.plugin.value=Alpha@123
+
+mvn jasypt:decrypt-value -Djasypt.encryptor.password=Shan7856 -Djasypt.plugin.value=kqLP7c8zFFFv4kEJC/DEki3qKBjRhF5piFck0U1j5TexzRkLURU8zHrLvS8U5q56
+
+mvn clean install -Djasypt.encryptor.password=Shan7856  
+

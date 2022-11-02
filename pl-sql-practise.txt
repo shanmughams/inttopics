@@ -1,0 +1,419 @@
+1 - ORACLE PLSQL RECORDS AND COLLECTIONS INTRODUCTION TO ORACLE COLLECTIONS
+
+ https://www.youtube.com/watch?v=TgoHpkEjrYY&list=PLb1qVSx1k1VpAFTXopXvAh_D3PLcTntdm&index=3
+
+Scalar
+=======
+DECLARE
+	v_ename varchar2(10);
+	v_empsal number;
+BEGIN
+	select ename, sal into v_ename, v_empsal from emp where empno = 5;
+
+	dbms_output.put_line('Name = ' || v_ename);
+	dbms_output.put_line('Sal = '|| v_sal);
+END;
+/
+
+
+COMPOSITE
+=========
+
+DECLARE
+	v_emprec emp%ROWTYPE;
+
+BEGIN
+	select * into v_emprec from emp where empno = 5;
+	dbms_output.put_line('Name = ' || v_emprec.ename);
+	dbms_output.put_line('Sal = ' || v_emprec.sal)
+	
+END;
+
+
+///- VARRAY
+
+DECLARE
+	TYPE V_WEEK_ARRAY_TYPE is VARRAY(7) of VARCHAR2(20);
+	
+	v_weekdays V_WEEK_ARRAY_TYPE := V_WEEK_ARRAY_TYPE(NULL,NULL,NULL,NULL,NULL,NULL,NULL);
+	
+BEGIN
+
+	FOR I in 1..7 
+	LOOP
+		dbms_output.put_line('WeekDay'||I||') : ' || v_weekdays(I);
+	END LOOP;
+
+end;
+
+/
+
+
+--===============
+set serveroutput on 
+DECLARE
+	TYPE add_type is RECORD( 
+		ename VARCHAR2(20),
+		street VARCHAR2(20),
+		city VARCHAR2(20),
+		state VARCHAR2(20),
+		country VARCHAR2(20),
+		pin number,
+	);
+
+	lv_address add_type;
+BEGIN
+	lv_address.ename = 'shan';
+	lv_address.street = 'Annanagar';
+	lv_address.city = 'chennai';
+	
+	dbms_output.put_line(lv_address.ename || '  ,  ' || lv_address.city);
+
+end;
+/
+--===============
+drop table emp_bkup;
+create table emp_bkup as select * from employees where 1=2;
+
+SET SERVEROUTPUT ON
+DECLARE
+	lv_emprecord employees%ROWTYPE;
+BEGIN 
+	select * into lv_emprecord from EMPLOYEES where employee_id=100;
+	if SQL%NOTFOUND THEN
+		dbms_output.put_line('No record exists for id - 5');
+	else 
+		dbms_output.put_line('Record exists for id - 5. ename : ' || lv_emprecord.first_name);
+        DBMS_OUTPUT.put_line('Going to save');
+        INSERT into emp_bkup values lv_emprecord;
+        
+	end if;
+	
+END;
+/
+
+
+select * from emp_bkup;
+
+--===============
+
+
+SET serveroutput ON
+DECLARE
+	lv_emp employees%ROWTYPE;
+BEGIN
+	SELECT * into lv_emp  from employees where employee_id=100;
+	lv_emp.salary := 9999;
+	lv_emp.last_name := 'Kings';
+	
+	update employees set row = lv_emp where employee_id=100;
+end;
+
+/
+
+--=======
+
+SET serveroutput ON
+DROP table emp_temp;
+create table emp_temp as select  employee_id, first_name, last_name   FROM employees;
+  
+ DECLARE
+	emp_id   employees.employee_id%TYPE := 285;
+	fname    employees.first_name%TYPE := 'Shan';
+	lname employees.last_name%TYPE := 'Sund';
+ BEGIN
+ 
+	INSERT into emp_temp(employee_id, first_name, last_name ) values (emp_id,
+                                                                      fname ,
+                                                                 lname );
+ 
+  DELETE FROM emp_temp   WHERE employee_id = emp_id
+	RETURNING first_name, last_name into fname, lname;
+	COMMIT;
+	dbms_output.put_line(fname || lname);
+ end;
+	
+ 
+ /
+ 
+ 
+ --============Write a program in PL/SQL to show the uses of CURVAL and NEXTVAL with a sequence name.
+ 
+ CREATE SEQUENCE emp_seq INCREMENT BY 1;
+ SET serveroutput ON;
+ drop table  emp_temp;
+ create table emp_temp as select  employee_id, first_name, last_name   FROM employees;
+ 
+ drop table  emp_temp1;
+ create table emp_temp1 as select  employee_id, first_name, last_name   FROM employees;
+ 
+ declare 
+	seq number;
+ begin 
+	seq := emp_seq.NEXTVAL;
+	dbms_output.put_line('Initial seq val '  || to_char( seq));
+	
+	INSERT into emp_temp(employee_id, first_name, last_name ) values (seq.nextval, 'Sam','Sund');
+	
+	INSERT into emp_temp(employee_id, first_name, last_name ) values (seq.currval, 'Tim','May');
+	
+	seq := emp_seq.CURRVAL;
+	
+	dbms_output.put_line('Curr seq val '  || to_char( seq));
+	DELETE from emp_temp where employee_id = seq;
+	
+	update emp_temp set employee_id = emp_seq.NEXTVAL where first_name = 'Sam';
+	
+	seq := emp_seq.CURRVAL;
+	dbms_output.put_line('Initial seq val '  || to_char( seq));
+ end;
+ /
+ --===================
+ 
+ SET serveroutput ON;
+ 
+ DECLARE
+	CURSOR c1 is SELECT employee_id, first_name, last_name   FROM employees;
+	
+	lv_emp c1%ROWTYPE;
+ BEGIN
+	OPEN c1;
+	FETCH c1 into lv_emp;
+	
+	CLOSE c1;
+	dbms_output.put_line('Id = ' || lv_emp.employee_id || '  . Fname = ' || lv_emp.first_name || '  . Lname = ' || lv_emp.last_name);
+ 
+ END;
+ /
+ 
+ 
+ 
+ -- =====DELETE %FOUND-- ===================
+ 
+ SET serveroutput ON;
+ 
+ DROP TABLE emp_temp;
+CREATE TABLE emp_temp AS   SELECT employee_id, first_name, last_name    FROM employees;
+ 
+ CREATE or REPLACE PROCEDURE delete_emp(eid NUMBER) AUTHID DEFINER AS 
+ BEGIN
+	DELETE from emp_tmp where employee_id = eid;
+	
+	IF SQL%FOUND THEN 
+		dbms_output.put_line('Delete succceded for the emp id ' || empid);
+	ELSE
+		dbms_output.put_line('Delete NOT succceded for the emp id ' || empid);
+	END IF;
+
+ END;
+ /
+ 
+ 
+ BEGIN
+	delete_emp(175);
+ END;
+ /
+-- =============================================
+ 
+ 
+   SET serveroutput ON;
+ 
+ DROP TABLE emp_temp;
+CREATE TABLE emp_temp AS   SELECT employee_id, first_name, last_name, email    FROM employees;
+ 
+DECLARE
+    z_emp_id NUMBER:=&employee_id;
+BEGIN
+    UPDATE emp_temp
+    SET    email = 'not available'
+    WHERE employee_id = z_emp_id;
+ 
+  IF SQL%NOTFOUND THEN
+      DBMS_OUTPUT.PUT_LINE ('No employee of ID '|| z_emp_id||' is found.');
+  ELSE
+    DBMS_OUTPUT.PUT_LINE (
+      'Update succeeded for employee_id: ' || z_emp_id
+    );
+  END IF;
+END;
+/
+--=========FIND EMP based on id. If not found raise exception===========
+ 
+ 
+SET serveroutput ON;
+ 
+DECLARE
+    empid NUMBER:=&employee_id;
+	lv_emprec employees%ROWTYPE;
+BEGIN
+   select * into lv_emprec from employees
+    WHERE employee_id = empid;
+ 
+	dbms_output.put_line(lv_emprec.first_name || ' ' || lv_emprec.last_name );
+	
+	RAISE 
+ 
+  END IF;
+  
+ EXCEPTION
+	WHEN NO_DATA_FOUND THEN RAISE_APPLICATION_ERROR(-20001,' The employee is not in DB');
+END;
+/
+ 
+ 
+--==============PL/SQL to display a cursor based detail information of employees from employees table.=======
+
+SET SERVEROUTPUT ON
+
+DECLARE
+CURSOR cursor_emp_info  IS SELECT employee_id, first_name, last_name, salary    FROM employees;
+
+lv_emprec cursor_emp_info%ROWTYPE;
+
+BEGIN
+
+	OPEN cursor_emp_info;
+	LOOP
+		FETCH cursor_emp_info into lv_emprec;
+		EXIT WHEN cursor_emp_info%NOTFOUND
+		dbms_output.put_line('Emp Infod :: -->' || lv_emprec.employee_id || ||lv_emprec.first_name || ' ' || lv_emprec.last_name );
+	END LOOP
+	
+	CLOSE cursor_emp_info;
+
+END;                  
+/
+
+--==============
+
+SET SERVEROUTPUT ON
+
+DECLARE
+empid employees.employee_id%TYPE;
+ename employees.first_name%TYPE;
+esal employees.salary%TYPE;
+CURSOR cursor_emp_info  IS SELECT employee_id, first_name, salary    FROM employees;
+
+BEGIN
+    OPEN cursor_emp_info;
+	LOOP
+	    FETCH cursor_emp_info INTO empid, ename, esal;
+	    EXIT WHEN cursor_emp_info%NOTFOUND;
+        if (esal > 8000) then 
+            dbms_output.put_line(empid || '  ' || ename || '  ' ||esal);
+        else
+            dbms_output.put_line(ename || '  sal is < 8000');
+        end if;
+        
+	  END LOOP; 
+     
+    close cursor_emp_info;
+END;                  
+/
+
+--==============
+
+SET SERVEROUTPUT ON
+
+DECLARE
+CURSOR cursor_emp_info  IS SELECT employee_id, first_name, last_name, salary    FROM employees;
+
+TYPE emp_rec_type is RECORD(
+	empid employees.employee_id%TYPE;
+	fname employees.first_name%TYPE;
+	lname employees.first_name%TYPE;
+	esal employees.salary%TYPE;
+);
+
+emp_rec emp_rec_type;
+BEGIN
+OPEN cursor_emp_info;
+LOOP 
+	FETCH cursor_emp_info into emp_rec;
+	EXIT WHEN cursor_emp_info%NOTFOUND;
+	dbms_output.put_line('Employees Information::  '
+                             ||'  ID: '
+                             ||emp_rec.empid
+                             ||'|   Name: '
+                             ||emp_rec.fname
+                             ||' '
+                             ||emp_rec.lname
+                             ||'|   Salary: '
+                             ||emp_rec.esal);
+
+END LOOP;
+CLOSE cursor_emp_info;
+END;
+/
+
+
+--====== PL/SQL to create an implicit cursor with for loop.=========
+
+SET SERVEROUTPUT ON
+
+DECLARE
+ 
+BEGIN
+	FOR emprec IN (
+		select d.DEPARTMENT_NAME, d.DEPARTMENT_ID,    first_name,
+                       last_name,
+                       job_id,
+                       salary from DEPARTMENTS d 
+					   JOIN employees e
+					   ON e.DEPARTMENT_ID = d.DEPARTMENT_ID
+					   WHERE job_ID = 'ST_CLERK' AND salary > 3000
+					   ) 
+	 LOOP
+		   dbms_output.Put_line('Name: '
+		                     ||emprec.first_name
+                             ||' '
+							 ||emprec.last_name||chr(9)
+							 ||' Department: '
+                             ||emprec.department_name||chr(9)
+                             ||' Department ID: '
+                             ||emprec.department_id||chr(9)
+                             ||' Job ID: '
+                             ||emprec.job_id||chr(9)
+                             ||' Salary: '
+                             ||emprec.salary);
+	
+	END LOOP;
+
+END;
+/
+
+
+--===EXPLICIT cursor in for LOOP
+
+SET SERVEROUTPUT ON
+
+DECLARE
+CURSOR empinfo IS  select d.DEPARTMENT_NAME, d.DEPARTMENT_ID,    first_name,
+                       last_name,
+                       job_id,
+                       salary from DEPARTMENTS d 
+					   JOIN employees e
+					   ON e.DEPARTMENT_ID = d.DEPARTMENT_ID
+					   WHERE job_ID = 'ST_CLERK' AND salary > 3000;
+BEGIN
+	FOR emprec IN empinfo 
+	 LOOP
+		   dbms_output.Put_line('Name: '
+		                     ||emprec.first_name
+                             ||' '
+							 ||emprec.last_name||chr(9)
+							 ||' Department: '
+                             ||emprec.department_name||chr(9)
+                             ||' Department ID: '
+                             ||emprec.department_id||chr(9)
+                             ||' Job ID: '
+                             ||emprec.job_id||chr(9)
+                             ||' Salary: '
+                             ||emprec.salary);
+	
+	END LOOP;
+
+END;
+/
+
+

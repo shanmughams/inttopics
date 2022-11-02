@@ -1,0 +1,45 @@
+What are the main components of a Stream?
+==========================================
+Components of the stream are:
+
+	-A data source (A collection of an Array, An I/O channel or an input device, A reactive source (e.g., comments in social media or tweets/re-tweets) , )A stream generator function or a static factory
+	-Set of Intermediate Operations to process the data source
+	-Single Terminal Operation that produces the result
+
+What are the most commonly used Intermediate operations?
+================================================
+	-Filter(Predicate<T>) - Allows selective processing of Stream elements. It returns elements that are satisfying the supplied condition by the predicate.
+	-map(Funtion<T, R>) - Returns a new Stream, transforming each of the elements by applying the supplied mapper function.= sorted() - Sorts the input elements and then passes them to the next stage.
+	-distinct() - Only pass on elements to the next stage, not passed yet.
+	-limit(long maxsize) - Limit the stream size to maxsize.
+	-skip(long start) - Skip the initial elements till the start.
+	-peek(Consumer) - Apply a consumer without modification to the stream.
+	-flatMap(mapper) - Transform each element to a stream of its constituent elements and flatten all the streams into a single stream
+	
+
+What is the most common type of Terminal operations?
+====================================================
+	-collect() - Collects single result from all elements of the stream sequence.
+	-reduce() - Produces a single result from all elements of the stream sequence
+	-count() - Returns the number of elements on the stream.
+	-min() - Returns the min element from the stream.
+	-max() - Returns the max element from the stream.
+	
+	-Search/Query operations
+		-anyMatch() , noneMatch() , allMatch() , ... - Short-circuiting operations.
+		-Takes a Predicate as input for the match condition.
+		-Stream processing will be stopped, as and when the result can be determined.
+
+	-Iterative operations, forEach() - Useful to do something with each of the Stream elements. It accepts a consumer.
+	-forEachOrdered() - It is helpful to maintain order in parallel streams.
+	
+How are Collections different from Stream?
+=======================================
+Collections are the source for the Stream. Java 8 collection API is enhanced with the default methods returning Stream<T> from the collections.
+
+Collections										Streams
+Data structure holds all the data elements		No data is stored. Have the capacity to process an infinite number of elements on demand
+External Iteration								Internal Iteration
+Can be processed any number of times			Traversed only once
+Elements are easy to access						No direct way of accessing specific elements
+Is a data store									Is an API to process the data	

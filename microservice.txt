@@ -1,0 +1,23 @@
+1 - https://www.youtube.com/watch?v=Zed6udTPGro 
+	How to Design Microservices Architecture? Uber Architecture - A Case Study | Tech Primers
+	Microsevice
+		- Sendgrid => email notification
+		- twilio => sms notification
+		- stripe => payment gateway
+		
+2 - System Design Interview Question: DESIGN A PARKING LOT - asked at Google, Facebook
+	https://www.youtube.com/watch?v=DSGsa0pu8-k
+	
+	
+	
+3 - Load balancer
+	https://www.youtube.com/watch?v=escR-07yVAs&t=462s
+	
+	
+4 - Whatsapp
+	https://www.youtube.com/watch?v=5m0L0k8ZtEs
+	
+	
+5 - Uber 
+	https://www.youtube.com/watch?v=J3DY3Te3A_A
+		

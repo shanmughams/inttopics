@@ -1,0 +1,100 @@
+https://www.red-gate.com/simple-talk/sql/oracle/partitioning-in-oracle/
+1 : List Partitioning:
+
+ – This type of partitioning separates the total set of values in the table into a distinct set of values which each partition can have. For example, the sales partitions can be a list of 
+regions such as North, East, and South West with each region being in a separate table as shown in the example below:
+
+    Let’s first create the table with list partition as shown in the sample DDL below:
+
+    CREATE TABLE SALES
+       (
+        SALES_NO NUMBER, 
+        DEPT_NAME VARCHAR2 (20),
+        SALE_AMOUNT NUMBER (10, 2),
+        SALE_DATE DATE,
+        REGION VARCHAR2 (10)
+       )
+       PARTITION BY LIST (REGION)
+          (
+           PARTITION P1 VALUES ('NORTH'),
+           PARTITION P2 VALUES ('SOUTH'),
+           PARTITION P3 VALUES ('EAST'),
+           PARTITION P4 VALUES ('WEST')
+         );
+
+    Let’s insert the data in the table:
+
+    Insert into SALES values (1,'SALES', 2000.25,'01-OCT-16','NORTH');
+    Insert into SALES values (2,'SALES', 6000.25,'01-OCT-16','SOUTH');
+    Insert into SALES values (3,'SALES', 8000.25,'01-OCT-16','EAST');
+    Insert into SALES values (4,'SALES', 12000.25,'01-OCT-16','WEST');
+    COMMIT;
+
+    Run the sample query which will give data in partitions P1 and P2:
+
+    SELECT * FROM SALES PARTITION (P1);
+    SELECT * FROM SALES PARTITION (P2);
+
+2 - Hash partitioning
+
+Hash partitioning is a partitioning technique where a hash key is used to distribute rows evenly across the different partitions (sub-tables). This is typically used where ranges aren't appropriate, i.e. employee number, productID, etc.
+History
+
+Hash partitioning was first introduced in Oracle 8i.
+Examples
+
+create table emp2 (
+   empno number(4), 
+   ename varchar2(30), 
+   sal   number
+) 
+partition by hash(empno) (
+  partition e1 tablespace emp1, 
+  partition e2 tablespace emp2, 
+  partition e3 tablespace emp3,
+  partition e4 tablespace emp4
+); 
+
+create table emp2 (
+   empno number(4), 
+   ename varchar2(30), 
+   sal   number
+) 
+PARTITION BY HASH(empno)
+PARTITIONS 3
+STORE IN (empts1, empts2, empts3);
+
+
+3 - Range Partitioning: – is based on a range of values, for example dates from less than 01-JAN-2014 can be in one partition, with dates from 2015 onwards in another partition, as shown below.
+
+    Below is a sample DDL for our Range Partition table:
+
+    CREATE TABLE SALE_ORDER
+    (
+    ORDER_NO NUMBER(10),
+    ORDER_TYPE VARCHAR2(5),
+    ORDER_DATE DATE,
+    FREIGHT_DATE DATE,
+    FREIGHT_AMOUNT NUMBER (10, 2),
+    ORDER_AMOUNT NUMBER (10, 2)
+    ) 
+    PARTITION BY RANGE (ORDER_DATE) 
+    (Partition P1 values less than (TO_DATE ('01-JAN-2014','dd-MON-yyyy')), 
+    Partition P2 values less than (TO_DATE ('01-JAN-2015','dd-MON-yyyy')), 
+    Partition P3 values less than (TO_DATE ('01-JAN-2016','dd-MON-yyyy')), 
+    Partition P4 values less than (TO_DATE ('01-JAN-2017','dd-MON-yyyy'))
+    );
+
+    Below is the script to insert data into the table:
+
+    INSERT INTO SALE_ORDER VALUES (1,'SALE','01-JAN-2013','01-JAN-2013', 20,200);
+    INSERT INTO SALE_ORDER VALUES (1,'SALE','01-JAN-2015','01-JAN-2015', 60,600);
+    INSERT INTO SALE_ORDER VALUES (1,'SALE','01-JAN-2016','01-JAN-2016', 80,800);
+    INSERT INTO SALE_ORDER VALUES (1,'SALE','01-JAN-2017','01-JAN-2017', 90,900);
+
+    Below is the select script to see the data in the table:
+
+    SELECT * FROM SALE_ORDER PARTITION (P1);
+    SELECT * FROM SALE_ORDER PARTITION (P2);
+
+

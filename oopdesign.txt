@@ -1,0 +1,25 @@
+
+
+SOLID
+
+Single Responsibility Principle
+===============================
+There should never be more than one reason for a class to change.
+https://sanaulla.info/2011/11/16/solid-single-responsibility-principle-2/
+
+Open Closed Principle
+====================
+	Software entities (Classes, modules, functions) should be OPEN for EXTENSION, CLOSED for MODIFICATION
+https://sanaulla.info/2011/11/19/solid-open-closed-principle-2/
+
+Liskov Substitution Principle
+============================
+    Methods that use references to the base classes must be able to use the objects of the derived classes without knowing it
+https://sanaulla.info/2011/11/28/solid-liskov-substitution-principle-2/
+
+
+Interface Segregation Principle (ISP)
+=====================================
+
+Dependency Inversion Principle
+=============================

@@ -1,0 +1,124 @@
+JPA Cascade Types
+===============
+The cascade types supported by the Java Persistence Architecture are as below:
+
+CascadeType.PERSIST : cascade type presist means that save() or persist() operations cascade to related entities.
+CascadeType.MERGE : cascade type merge means that related entities are merged when the owning entity is merged.
+CascadeType.REFRESH : cascade type refresh does the same thing for the refresh() operation.
+CascadeType.REMOVE : cascade type remove removes all related entities association with this setting when the owning entity is deleted.
+CascadeType.DETACH : cascade type detach detaches all related entities if a “manual detach” occurs.
+CascadeType.ALL
+
+CascadeType.REMOVE vs Orphan Removal
+@OneToMany(orphanRemoval = true, mappedBy = "...")
+
+1 - One to One Mapping -- foreign key column in Employee table i.e. ACCOUNT_ID to point to Account table
+=====================
+https://howtodoinjava.com/hibernate/hibernate-one-to-one-mapping/
+EmployeeEntity.java
+@OneToOne
+@JoinColumn(name="ACCOUNT_ID")
+private AccountEntity account;
+
+
+AccountEntity.java
+@OneToOne(mappedBy="account")
+private EmployeeEntity employee;
+
+Hibernate one to one mapping with common join table
+
+EmployeeEntity.java
+@OneToOne(cascade = CascadeType.ALL)
+@JoinTable(name="EMPLOYEE_ACCCOUNT", joinColumns = @JoinColumn(name="EMPLOYEE_ID"),
+inverseJoinColumns = @JoinColumn(name="ACCOUNT_ID"))
+private AccountEntity account;
+
+
+2 -One To Many		-- foreign key column in account table i.e. EMPLOYEE_ID. 
+=============
+https://howtodoinjava.com/hibernate/hibernate-one-to-many-mapping/
+@Entity
+@Table(name = "Employee")
+public class EmployeeEntity implements Serializable
+{
+@OneToMany(cascade=CascadeType.ALL, fetch = FetchType.LAZY)
+@JoinColumn(name="EMPLOYEE_ID")
+	private Set<AccountEntity> accounts;
+	
+}
+
+@Entity
+@Table(name = "Account")
+public class AccountEntity implements Serializable
+{
+
+@ManyToOne (mappedBy="accounts",  fetch = FetchType.LAZY)
+	private EmployeeEntity employee;
+
+}
+
+3 - Many to Many mapping
+========================
+ReaderEntity.java
+
+@Entity(name = "ReaderEntity")
+@Table(name = "READER", uniqueConstraints = {
+    @UniqueConstraint(columnNames = "ID"),
+    @UniqueConstraint(columnNames = "EMAIL") })
+ 
+public class ReaderEntity implements Serializable 
+{
+  private static final long serialVersionUID = -1798070786993154676L;
+ 
+ 
+  @ManyToMany(cascade=CascadeType.ALL)
+  @JoinTable(name="READER_SUBSCRIPTIONS", joinColumns={@JoinColumn(referencedColumnName="ID")}
+                    , inverseJoinColumns={@JoinColumn(referencedColumnName="ID")})  
+  private Set<SubscriptionEntity> subscriptions;
+ 
+}
+@Entity(name = "SubscriptionEntity")
+@Table(name = "SUBSCRIPTION", uniqueConstraints = {
+    @UniqueConstraint(columnNames = "ID")})
+ 
+public class SubscriptionEntity implements Serializable 
+{
+  private static final long serialVersionUID = -6790693372846798580L;
+ 
+  @ManyToMany(mappedBy="subscriptions")
+  private Set<ReaderEntity> readers;
+  
+}
+
+EhCache
+=======
+Configuring EhCache
+<property key="hibernate.cache.use_second_level_cache">true</property>
+<property name="hibernate.cache.region.factory_class">org.hibernate.cache.ehcache.EhCacheRegionFactory</property>
+<property key="hibernate.cache.use_query_cache">true</property>
+
+<cache
+    name="com.somecompany.someproject.domain.Country"
+    maxElementsInMemory="10000"
+    eternal="false"
+    timeToIdleSeconds="300"
+    timeToLiveSeconds="600"
+    overflowToDisk="true"
+/>
+
+
+@Entity
+@Cache(usage=CacheConcurrencyStrategy.READ_ONLY, 
+region="department")
+public class DepartmentEntity implements Serializable 
+{
+  //code
+}
+
+
+https://howtodoinjava.com/hibernate/how-to-define-association-mappings-between-hibernate-entities/
+Association Types 		Options/Usage
+One-to-one				Either end can be made the owner, but one (and only one) of them should be; if you don’t specify this, you will end up with a circular dependency.
+One-to-many				The many end must be made the owner of the association.
+Many-to-one				This is the same as the one-to-many relationship viewed from the opposite perspective, so the same rule applies: the many end must be made the owner of the association.
+Many-to-many			Either end of the association can be made the owner.
